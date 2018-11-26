@@ -1,0 +1,57 @@
+This problem involves reverse engineering of a switch statement from assembly code. (It
+could also be done from disassembled object code with a bit more work, including using the GDB
+debugger to inspect the content of the jump table.) In the following procedure, the body of the
+switch statement has been removed:
+long switch_prob(long x, long n)
+{
+long result = x;
+switch(n) {
+/* Fill in code here */
+}
+return result;
+}
+Following is the assembly code for the procedure (compiled with -O1). Remember that parameters
+x and n will be passed in registers %rdiand %rsi, respectively.
+
+
+file "switch_prob-soln.c"
+.text
+.globl switch_prob
+.type switch_prob, @function
+switch_prob:
+.LFB0:
+.cfi_startproc
+subq $50, %rsi
+cmpq $5, %rsi
+ja .L2
+jmp *.L7(,%rsi,8)
+.section .rodata
+.align 8
+.align 4
+.L7:
+.quad .L3
+.quad .L2
+.quad .L3
+.quad .L4
+.quad .L5
+.quad .L6
+.text
+.L3:
+leaq 0(,%rdi,4), %rax
+ret
+.L4:
+movq %rdi, %rax
+sarq $2, %rax
+ret
+.L5:
+leaq (%rdi,%rdi,2), %rdi
+.L6:
+imulq %rdi, %rdi
+.L2:
+leaq 10(%rdi), %rax
+ret
+.cfi_endproc
+.LFE0:
+.size switch_prob, .-switch_prob
+.ident "GCC: (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3"
+.section .note.GNU-stack,"",@progbits
